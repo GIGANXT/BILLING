@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Plus, X, Minus, Printer } from 'lucide-react';
+import { Search, Plus, X, Minus, Printer, History } from 'lucide-react';
 import { BillItem, Medicine, BatchType } from '../types';
 import BarcodeScanner from '../components/BarcodeScanner';
 
@@ -20,6 +20,8 @@ const BillingPage: React.FC = () => {
   const [numberInputTimeout, setNumberInputTimeout] = useState<NodeJS.Timeout | null>(null);
   const [lastScannedBarcode, setLastScannedBarcode] = useState<string | null>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
 
   // Mock medicines with batch information
   const mockMedicines: Medicine[] = [
@@ -270,6 +272,24 @@ const BillingPage: React.FC = () => {
     }
   };
 
+  const updateCartItemQuantity = (medicineId: string, newQuantity: number) => {
+    // If the new quantity is 0 or negative, remove the item from cart
+    if (newQuantity <= 0) {
+      setCartItems(cartItems.filter(item => item.medicineId !== medicineId));
+      return;
+    }
+    
+    const updatedCartItems = [...cartItems];
+    const itemIndex = updatedCartItems.findIndex(item => item.medicineId === medicineId);
+    
+    if (itemIndex !== -1) {
+      // Update the quantity and recalculate the total
+      updatedCartItems[itemIndex].quantity = newQuantity;
+      updatedCartItems[itemIndex].total = newQuantity * updatedCartItems[itemIndex].unitPrice;
+      setCartItems(updatedCartItems);
+    }
+  };
+
   // Group cart items by medicine name for display
   const groupedCartItems = cartItems.reduce((groups, item) => {
     const name = item.medicineName;
@@ -322,7 +342,8 @@ const BillingPage: React.FC = () => {
             <p>Date: ${currentDate}</p>
           </div>
           <div class="bill-details">
-            <p>Customer: ${'Walk-in Customer'}</p>
+            <p>Customer: ${customerName || 'Walk-in Customer'}</p>
+            <p>Phone: ${customerPhone || 'N/A'}</p>
           </div>
           <table class="bill-items">
             <thead>
@@ -606,7 +627,35 @@ const BillingPage: React.FC = () => {
         {/* Right Section - Cart and Billing */}
         <div className="space-y-4 sm:space-y-6">
           <div className="bg-white rounded-xl shadow-lg p-3 sm:p-6 hover:shadow-xl transition-shadow duration-300" ref={billRef}>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">Cart</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">Cart</h2>
+            
+            {/* Customer Information Fields */}
+            {cartItems.length > 0 && (
+            <div className="mb-4 sm:mb-6 space-y-3">
+              <div>
+                <label htmlFor="customerName" className="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
+                <input
+                  type="text"
+                  id="customerName"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  placeholder="Enter customer name"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                />
+              </div>
+              <div>
+                <label htmlFor="customerPhone" className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                <input
+                  type="tel"
+                  id="customerPhone"
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  placeholder="Enter phone number"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                />
+              </div>
+            </div>
+            )}
           
             {cartItems.length === 0 ? (
               <div className="text-center py-6 sm:py-8 text-gray-500">
@@ -626,21 +675,33 @@ const BillingPage: React.FC = () => {
                     
                       <div className="flex justify-between items-center">
                         <div className="flex items-center">
-                          <button
-                            onClick={() => reduceQuantity(items[0].medicineId)}
-                            className="p-1 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors duration-300"
-                            aria-label="Reduce Quantity"
-                          >
-                            <Minus className="w-3 h-3" />
-                          </button>
-                          <span className="mx-2 font-medium text-xs sm:text-sm">{getTotalQuantity(items)}</span>
-                          <button
-                            onClick={() => increaseQuantity(items[0].medicineId)}
-                            className="p-1 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors duration-300"
-                            aria-label="Increase Quantity"
-                          >
-                            <Plus className="w-3 h-3" />
-                          </button>
+                          <div className="relative mx-2 flex items-center">
+                            <input 
+                              type="number" 
+                              min="1"
+                              className="w-12 h-6 text-center text-xs sm:text-sm font-medium border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              defaultValue={getTotalQuantity(items).toString()}
+                              placeholder="Qty"
+                              onChange={(e) => {
+                                if (e.target.value === '') return;
+                                const newQuantity = parseInt(e.target.value, 10);
+                                if (!isNaN(newQuantity) && newQuantity > 0) {
+                                  updateCartItemQuantity(items[0].medicineId, newQuantity);
+                                }
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  if ((e.target as HTMLInputElement).value === '') return;
+                                  const newQuantity = parseInt((e.target as HTMLInputElement).value, 10);
+                                  if (!isNaN(newQuantity) && newQuantity > 0) {
+                                    updateCartItemQuantity(items[0].medicineId, newQuantity);
+                                  }
+                                  (e.target as HTMLInputElement).blur();
+                                }
+                              }}
+                              aria-label="Edit quantity"
+                            />
+                          </div>
                         </div>
                         <button
                           onClick={() => {
@@ -761,6 +822,21 @@ const BillingPage: React.FC = () => {
                 </button>
               </>
             )}
+          </div>
+
+          {/* Billing History Card - Separate from cart */}
+          <div className="bg-white rounded-xl shadow-lg p-3 sm:p-6 hover:shadow-xl transition-shadow duration-300 mt-4 sm:mt-6">
+            <button
+              onClick={() => {
+                // Add billing history functionality here
+                alert('Billing History feature coming soon!');
+              }}
+              className="w-full py-2 sm:py-3 bg-white border-2 border-blue-500 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors duration-300 flex items-center justify-center text-sm sm:text-base"
+              aria-label="View Billing History"
+            >
+              <History className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+              Billing History
+            </button>
           </div>
         </div>
       </div>

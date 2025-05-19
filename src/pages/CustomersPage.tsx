@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Plus, Edit2, Trash2 } from 'lucide-react';
+import { Search, Edit2, Trash2, History } from 'lucide-react';
 import { Customer } from '../types';
 
 const CustomersPage: React.FC = () => {
@@ -21,10 +21,6 @@ const CustomersPage: React.FC = () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold text-gray-800">Customer Management</h1>
-          <button className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-            <Plus className="w-5 h-5 mr-2" />
-            Add Customer
-          </button>
         </div>
 
         <div className="bg-white rounded-xl shadow-sm p-6">
@@ -71,10 +67,13 @@ const CustomersPage: React.FC = () => {
                     </td>
                     <td className="py-4">
                       <div className="flex space-x-2">
-                        <button className="p-1 hover:bg-gray-100 rounded">
+                        <button className="p-1 hover:bg-gray-100 rounded" title="Billing History">
+                          <History className="w-4 h-4 text-blue-600" />
+                        </button>
+                        <button className="p-1 hover:bg-gray-100 rounded" title="Edit Customer">
                           <Edit2 className="w-4 h-4 text-blue-600" />
                         </button>
-                        <button className="p-1 hover:bg-gray-100 rounded">
+                        <button className="p-1 hover:bg-gray-100 rounded" title="Delete Customer">
                           <Trash2 className="w-4 h-4 text-red-600" />
                         </button>
                       </div>

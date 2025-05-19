@@ -1,6 +1,11 @@
 import React from 'react';
-import { Menu, Home, Package, FileText, Users, BarChart2, LogOut } from 'lucide-react';
+import { Menu, Home, Package, FileText, Users, BarChart2, LogOut, Warehouse } from 'lucide-react';
 import { useLocation, Link } from 'react-router-dom';
+import ForecastingIcon from './ForecastingIcon';
+import WarehouseIcon from './WarehouseIcon';
+import AutomationIcon from './AutomationIcon';
+import BackupIcon from './BackupIcon';
+
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -45,13 +50,21 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const menuItems = [
-    { icon: Home, label: 'Dashboard', path: '/' },
-    { icon: Package, label: 'Inventory', path: '/inventory' },
-    { icon: FileText, label: 'Billing', path: '/billing' },
-    { icon: Users, label: 'Customers', path: '/customers' },
-    { icon: BarChart2, label: 'Reports', path: '/reports' },
-  ];
+const regularMenu = [
+  { icon: Home, label: 'Dashboard', path: '/' },
+  { icon: Package, label: 'Inventory', path: '/inventory' },
+  { icon: FileText, label: 'Billing', path: '/billing' },
+  { icon: Users, label: 'Customers', path: '/customers' },
+  { icon: BarChart2, label: 'Reports', path: '/reports' }
+];
+
+const premiumMenu = [
+  { icon: WarehouseIcon, label: 'Warehouse', path: '/warehouse' },
+  { icon: ForecastingIcon, label: 'Planning and Forecasting', path: '/forecasting' },
+  { icon: AutomationIcon, label: 'Workflow Automation', path: '/workflow_automation' },
+  { icon: BackupIcon, label: 'Cloud Backup', path: '/cloud_backup' }
+];
+
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -84,28 +97,56 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </button>
         </div>
         <nav className="p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-64px)]">
-          {menuItems.map((item) => {
-            const isActive = location.pathname === item.path;
-            return (
-              <Link
-                key={item.label}
-                to={item.path}
-                className={`flex items-center p-2.5 rounded-lg transition-all duration-200 ${
-                  isActive 
-                    ? 'bg-blue-50/80 text-blue-600' 
-                    : 'text-gray-600 hover:bg-gray-50/80'
-                }`}
-              >
-                <item.icon className={`w-5 h-5 ${
-                  isActive ? 'text-blue-600' : 'text-gray-400'
-                }`} />
-                <span className="ml-3 text-sm font-medium">{item.label}</span>
-                {isActive && (
-                  <div className="ml-auto w-1 h-1 rounded-full bg-blue-600"></div>
-                )}
-              </Link>
-            );
-          })}
+{regularMenu.map((item) => {
+  const isActive = location.pathname === item.path;
+  return (
+    <Link
+      key={item.label}
+      to={item.path}
+      className={`flex items-center p-2.5 rounded-lg transition-all duration-200 ${
+        isActive 
+          ? 'bg-blue-50/80 text-blue-600' 
+          : 'text-gray-600 hover:bg-gray-50/80'
+      }`}
+    >
+      <item.icon className={`w-5 h-5 ${
+        isActive ? 'text-blue-600' : 'text-gray-400'
+      }`} />
+      <span className="ml-3 text-sm font-medium">{item.label}</span>
+      {isActive && (
+        <div className="ml-auto w-1 h-1 rounded-full bg-blue-600"></div>
+      )}
+    </Link>
+  );
+})}
+
+{/* Divider and Premium Section */}
+<div className="pt-4 mt-4 border-t border-gray-200">
+  <h2 className="text-xs font-semibold text-gray-400 px-2 mb-2 uppercase tracking-wide">Premium</h2>
+  {premiumMenu.map((item) => {
+    const isActive = location.pathname === item.path;
+    return (
+      <Link
+        key={item.label}
+        to={item.path}
+        className={`flex items-center p-2.5 rounded-lg transition-all duration-200 ${
+          isActive 
+            ? 'bg-blue-50/80 text-blue-600' 
+            : 'text-gray-600 hover:bg-gray-50/80'
+        }`}
+      >
+        <item.icon className={`w-5 h-5 ${
+          isActive ? 'text-blue-600' : 'text-gray-400'
+        }`} />
+        <span className="ml-3 text-sm font-medium">{item.label}</span>
+        {isActive && (
+          <div className="ml-auto w-1 h-1 rounded-full bg-blue-600"></div>
+        )}
+      </Link>
+    );
+  })}
+</div>
+
           <div className="pt-3 mt-3 border-t border-gray-100">
             <button className="flex items-center w-full p-2.5 text-gray-600 rounded-lg hover:bg-red-50/80 transition-colors group">
               <LogOut className="w-5 h-5 text-gray-400 group-hover:text-red-500" />

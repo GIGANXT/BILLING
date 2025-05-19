@@ -26,8 +26,30 @@ const AddMedicineModal: React.FC<AddMedicineModalProps> = ({ isOpen, onClose, on
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Calculate total stock
-    const totalStock = batches.reduce((sum, batch) => sum + (parseInt(batch.quantity) || 0), 0);
+    // Check for incomplete batches (has quantity but no expiry date or vice versa)
+    const incompleteBatches = batches.filter(batch => 
+      (batch.quantity && batch.quantity !== '0' && !batch.expiryDate) || 
+      (!batch.quantity && batch.expiryDate)
+    );
+    
+    if (incompleteBatches.length > 0) {
+      alert('Some batches have incomplete information. Please provide both quantity and expiry date for each batch you want to add.');
+      return;
+    }
+    
+    // Filter out empty batches (no quantity and no expiry date)
+    const validBatches = batches.filter(batch => 
+      (batch.quantity && batch.quantity !== '0' && batch.expiryDate)
+    );
+    
+    // Validate that at least one batch has data
+    if (validBatches.length === 0) {
+      alert('Please add at least one batch with quantity and expiry date');
+      return;
+    }
+    
+    // Calculate total stock from valid batches only
+    const totalStock = validBatches.reduce((sum, batch) => sum + (parseInt(batch.quantity) || 0), 0);
     
     // Create the new medicine object
     const newMedicine: Omit<Medicine, 'id'> = {
@@ -36,7 +58,7 @@ const AddMedicineModal: React.FC<AddMedicineModalProps> = ({ isOpen, onClose, on
       manufacturer,
       category,
       stock: totalStock,
-      batches: batches.map(batch => ({
+      batches: validBatches.map(batch => ({
         type: batch.type,
         quantity: parseInt(batch.quantity) || 0,
         expiryDate: batch.expiryDate,
@@ -167,12 +189,16 @@ const AddMedicineModal: React.FC<AddMedicineModalProps> = ({ isOpen, onClose, on
           
           <div className="mb-4">
             <h3 className="text-lg font-medium text-gray-800 mb-2">Batch Information</h3>
+            <p className="text-sm text-gray-600 mb-3">
+              Fill in details for the batches you want to add. You can add just one, two, or all three batches as needed.
+              <strong className="block mt-1">At least one batch is required.</strong>
+            </p>
             <div className="space-y-3">
               {batches.map((batch, index) => (
-                <div key={batch.type} className="grid grid-cols-1 md:grid-cols-3 gap-3 p-3 border border-gray-200 rounded-md">
+                <div key={batch.type} className="grid grid-cols-1 md:grid-cols-3 gap-3 p-3 border border-gray-200 rounded-md relative">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Batch {batch.type}
+                      Batch {batch.type} <span className="text-xs text-gray-500 font-normal">(Optional)</span>
                     </label>
                     <div className="flex items-center">
                       <span className={`px-3 py-1 rounded-md text-sm font-medium ${
@@ -195,8 +221,9 @@ const AddMedicineModal: React.FC<AddMedicineModalProps> = ({ isOpen, onClose, on
                       onChange={(e) => handleBatchChange(index, 'quantity', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                       min="0"
-                      required
+                      placeholder="Leave empty to skip this batch"
                     />
+                    <p className="text-xs text-gray-500 mt-1">Both quantity and expiry date required if adding this batch</p>
                   </div>
                   
                   <div>
@@ -208,8 +235,9 @@ const AddMedicineModal: React.FC<AddMedicineModalProps> = ({ isOpen, onClose, on
                       value={batch.expiryDate}
                       onChange={(e) => handleBatchChange(index, 'expiryDate', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                      required
+                      placeholder="Required if adding this batch"
                     />
+                    <p className="text-xs text-gray-500 mt-1">Required if quantity is provided</p>
                   </div>
                 </div>
               ))}
@@ -288,4 +316,4 @@ const AddMedicineModal: React.FC<AddMedicineModalProps> = ({ isOpen, onClose, on
   );
 };
 
-export default AddMedicineModal; 
+export default AddMedicineModal;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { IndianRupee, Package, Users, AlertTriangle, TrendingUp } from 'lucide-react';
+import { IndianRupee, Package, Users, AlertTriangle, TrendingUp, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import DashboardCard from '../components/DashboardCard';
 
 const DashboardPage: React.FC = () => {
@@ -23,7 +23,7 @@ const DashboardPage: React.FC = () => {
         </div>
 
         {/* Dashboard Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 sm:gap-6">
           <DashboardCard
             title="Today's Sales"
             value="₹24,500"
@@ -50,6 +50,20 @@ const DashboardPage: React.FC = () => {
             value="23"
             icon={AlertTriangle}
             className="bg-gradient-to-r from-red-50 to-red-100 hover:shadow-lg transition-shadow duration-300"
+          />
+          <DashboardCard
+            title="Receivables"
+            value="₹32,450"
+            icon={ArrowDownLeft}
+            trend={{ value: 5, isPositive: true }}
+            className="bg-gradient-to-r from-amber-50 to-amber-100 hover:shadow-lg transition-shadow duration-300"
+          />
+          <DashboardCard
+            title="Payable"
+            value="₹18,720"
+            icon={ArrowUpRight}
+            trend={{ value: 2, isPositive: false }}
+            className="bg-gradient-to-r from-cyan-50 to-cyan-100 hover:shadow-lg transition-shadow duration-300"
           />
         </div>
 
